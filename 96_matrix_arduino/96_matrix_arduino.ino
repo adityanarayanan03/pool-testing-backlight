@@ -4,7 +4,7 @@ int dataPin = 11;
 
 int numOfRegisters = 3;
 byte *registerState;
-int incomingByte = 0;
+String incomingByte = "000000";
 void setup()
 {
   //Initialize array
@@ -22,18 +22,28 @@ void setup()
   resetRegisters();
 
   Serial.begin(9600);
+
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop()
 {
-  writeLED(3, 3, 10000 / 3);
+  /*writeLED(3, 3, 10000 / 3);
   writeLED(5, 5, 10000 / 3);
-  writeLED(7, 7, 10000 / 3);
+  writeLED(7, 7, 10000 / 3);*/
+
+  digitalWrite(LED_BUILTIN, HIGH);
+  delayMicroseconds(1000);
+  digitalWrite(LED_BUILTIN, LOW);
+
   if (Serial.available() > 0)
   {
-    incomingByte++;
+    incomingByte = Serial.readString();
   }
-  Serial.println(incomingByte);
+
+  Serial.println(incomingByte.substring(0, 2).toInt());
+  Serial.println(incomingByte.substring(2, 4).toInt());
+  Serial.println(incomingByte.substring(4, 6).toInt());
 }
 
 void regWrite(int pin, bool state)
