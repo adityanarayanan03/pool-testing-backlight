@@ -113,11 +113,14 @@ void writeLED(int anode, int cathode, int microsecs)
   and keeps the LED on for specific microseconds. LED array
   is indexed at 1.
   */
-  regWrite(anode - 1, HIGH);
-  regWrite(cathode + 12 - 1, LOW);
+  if (anode != 0 && cathode != 0)
+  {
+    regWrite(anode - 1, HIGH);
+    regWrite(cathode + 12 - 1, LOW);
 
-  delayMicroseconds(microsecs);
+    delayMicroseconds(microsecs);
 
-  regWrite(anode - 1, LOW);
-  regWrite(cathode + 12 - 1, HIGH);
+    regWrite(anode - 1, LOW);
+    regWrite(cathode + 12 - 1, HIGH);
+  }
 }
