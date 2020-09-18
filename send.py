@@ -32,7 +32,7 @@ while 1:
         else:
             myString += f"{d}"
 
-        arduino.write(myString.encode())
+        arduino.write("010203040506".encode())
     #time.sleep(5)
 
     print(arduino.readline().decode('utf-8'))

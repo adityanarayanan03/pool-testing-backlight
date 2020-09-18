@@ -1,10 +1,15 @@
+//Variables for controlling the Shift Register(s)
 int latchPin = 8;
 int clockPin = 12;
 int dataPin = 11;
-
 int numOfRegisters = 3;
 byte *registerState;
-String incomingByte = "000000";
+
+//Variables to help with data transfer from Python
+String incomingString = "000000000000"; //6 Copies of 2 digits per Anode/Cathode
+int anodes[] = {0, 0, 0};
+int cathodes[] = {0, 0, 0}; //Zero is not a valid index for the LED Matrix
+
 void setup()
 {
   //Initialize array
@@ -13,47 +18,55 @@ void setup()
   {
     registerState[i] = 0;
   }
-  //Adding a fake comment to see if VS Code is ok
+
   //set pins to output so you can control the shift register
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
 
+  //Clear all the shift registers. Anodes go LOW, Cathodes go HIGH
   resetRegisters();
 
+  //Set up serial communication at 9600 baud
+  //Might have to go 115200 if multiplexing no good.
   Serial.begin(9600);
-
-  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop()
 {
-  /*writeLED(3, 3, 10000 / 3);
-  writeLED(5, 5, 10000 / 3);
-  writeLED(7, 7, 10000 / 3);*/
 
-  digitalWrite(LED_BUILTIN, HIGH);
-  delayMicroseconds(1000);
-  digitalWrite(LED_BUILTIN, LOW);
-
+  //Check for any incoming data
   if (Serial.available() > 0)
   {
-    incomingByte = Serial.readString();
+    incomingString = Serial.readString();
+
+    for (int i = 0; i < 3; i++)
+    {
+      //The protocol I set up here is that anode indices indexed
+      //from 1 are the first 6 digits. Cathodes follow suite as next 6.
+      anodes[i] = incomingString.substring(2 * i, 2 * (i + 1)).toInt();
+      cathodes[i] = incomingString.substring(2 * i + 6, 2 * (i + 1) + 6).toInt();
+    }
   }
 
-  Serial.println(incomingByte.substring(0, 2).toInt());
-  Serial.println(incomingByte.substring(2, 4).toInt());
-  Serial.println(incomingByte.substring(4, 6).toInt());
+  for (int i = 0; i < 3; i++)
+  {
+    //Sends the command to the LED array based on the incoming data.
+    writeLED(anodes[i], cathodes[i], 10000 / 3);
+  }
 }
 
 void regWrite(int pin, bool state)
 {
+  /*
+  Writes a certain pin and a certain state to the Shift registers
+  */
   //Determines register
   int reg = pin / 8;
   //Determines pin for actual register
   int actualPin = pin - (8 * reg);
 
-  //Begin session
+  //Begin session by assigning latch pin low
   PORTB &= ~_BV(PB0); //Directly write latch pin low
 
   for (int i = 0; i < numOfRegisters; i++)
@@ -71,12 +84,17 @@ void regWrite(int pin, bool state)
     shiftOut(dataPin, clockPin, MSBFIRST, *states);
   }
 
-  //End session
+  //End session by assigning latch pin high
   PORTB |= _BV(PB0); //Directly writing the latch pin HIGH
 }
 
 void resetRegisters()
 {
+  /*
+  Goes through and clears all the registers such that
+  no LED's will be on. Anodes are written LOW and Cathodes
+  are written HIGH.
+  */
   for (int i = 0; i < 12; i++)
   {
     regWrite(i, LOW);
@@ -90,6 +108,11 @@ void resetRegisters()
 
 void writeLED(int anode, int cathode, int microsecs)
 {
+  /*
+  Applies the regWrite function to an anode pin, cathode pin,
+  and keeps the LED on for specific microseconds. LED array
+  is indexed at 1.
+  */
   regWrite(anode - 1, HIGH);
   regWrite(cathode + 12 - 1, LOW);
 
