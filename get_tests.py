@@ -5,21 +5,27 @@ import random
 import time
 import sys
 import pickle
+from tkinter import *
 
 class Pool_Matrix:
     """
     Class for the Duration of a pool-testing run.
     """
-
-    sampleNum = 0
+    sampleNum = 1
     dim = 31
     readFile = None
     arduino = None
     arduinoPort = None
 
+    mainwindow = Tk()
+    showSampleNum = None
+    plusButton = None
+    sampleNumString = None
+    startButton = None
+
     def setup(self):
         self.arduinoPort = [a.device for a in serial.tools.list_ports.comports() if "USB-SERIAL" in a.description][0]
-        self.arduino = serial.Serial(self.arduinoPort,9600)
+        self.arduino = serial.Serial(self.arduinoPort, 9600)
 
     def read_inputs(self):
         """
@@ -32,11 +38,11 @@ class Pool_Matrix:
         Increases the sample number by 1.
         """
 
-        if (self.sampleNum < self.dim**2):
+        if (self.sampleNum < (self.dim)**2):
             self.sampleNum += 1
-            return True
-        else:
-            return False
+            self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.dim**2}")
+
+        self.send_to_arduino(self.get_tests())
 
     def get_tests(self, cell = None):
         """
@@ -97,6 +103,7 @@ class Pool_Matrix:
             sendString += f"0{cathode}"
         
         try:
+            print(sendString)
             self.arduino.write(sendString.encode())
         except serial.serialutil.SerialException:
             pickle_dump = {'dim':self.dim, 'sampleNum':self.sampleNum}
@@ -109,17 +116,34 @@ class Pool_Matrix:
             sys.exit(0)
         return True
     
-    def __init__(self, dim=31, sampleNum=0, readFile=None):
+    def matrixStart(self):
+        self.send_to_arduino(self.get_tests())
+        self.startButton.destroy()
+        self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.dim**2}")
+
+    def __init__(self, dim=31, sampleNum=1, readFile=None):
         self.dim = dim
         self.sampleNum = sampleNum
         self.readFile = readFile
 
         self.setup()
 
+        self.mainwindow.geometry("500x500")
+        self.mainwindow.title("Pool Testing Matrix Controller")
+
+        self.sampleNumString = StringVar(self.mainwindow)
+        self.sampleNumString.set("Sampling has not been started")
+        self.showSampleNum = Label(self.mainwindow, textvariable = self.sampleNumString)
+        self.showSampleNum.pack()
+
+        self.plusButton = Button(text = 'Plus One', command = self.plus_one, width = 15, height = 3)
+        self.plusButton.place(rely=.5, relx = .5, anchor = 's')
+
+        self.startButton = Button(text = 'Start', command = self.matrixStart, width = 15, height = 3)
+        self.startButton.place(rely=.5, relx = .5, anchor = 'n')
+
+        self.mainwindow.mainloop()
+
 
 if __name__ == "__main__":
     run = Pool_Matrix()
-    while True:
-        run.send_to_arduino(run.get_tests())
-        run.plus_one()
-        time.sleep(3);
