@@ -54,6 +54,9 @@ void loop()
     //Sends the command to the LED array based on the incoming data.
     writeLED(anodes[i], cathodes[i], 10000 / 3);
   }
+
+  //Serial.println(anodes[0]);
+  //Serial.println(cathodes[0]);
 }
 
 void regWrite(int pin, bool state)
