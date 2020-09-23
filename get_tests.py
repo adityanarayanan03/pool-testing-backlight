@@ -130,7 +130,7 @@ class Pool_Matrix:
             ]
 
     def get_test_from_file(self):
-        return [i for i in range(len(self.inputMatrix)) if self.sampleNum in self.inputMatrix[i]]
+        return [i+1 for i in range(len(self.inputMatrix)) if self.sampleNum in self.inputMatrix[i]]
 
     def send_to_arduino(self, leds):
         """
