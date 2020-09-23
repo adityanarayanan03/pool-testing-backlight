@@ -13,7 +13,8 @@ class Pool_Matrix:
     Class for the Duration of a pool-testing run.
     """
     sampleNum = 1
-    dim = 31
+    dim = 0
+    numSamples = 0
     readFile = None
     arduino = None
     arduinoPort = None
@@ -42,26 +43,30 @@ class Pool_Matrix:
         self.readInputWindow.destroy()
         f = open(self.readFile, 'r')
         self.inputMatrix = eval(f.read())
+        self.numSamples = int(len(self.inputMatrix)*len(self.inputMatrix[0])/3)
+        print(self.numSamples)
         self.useFile = True
         
         
     def collect(self):
         self.dim = int(self.dimensionInput.get())
+        self.numSamples = self.dim**2
         print(self.dim)
         self.readDimensionWindow.destroy()
 
     def input_scheme(self):
         self.readInputWindow.destroy()
         self.readDimensionWindow = Tk()
-        self.readDimensionWindow.geometry("400x100")
+        self.readDimensionWindow.geometry("400x300")
         self.readDimensionWindow.title("Dimension Input")
         self.dimensionInput = StringVar(self.readDimensionWindow)
         self.dimensionInput.set("Select Sampling Dimension") #Setting Default Value
-        dimensionOptions = [i for i in range(1, 31)]
+        dimensionOptions = [i for i in range(1, 32)]
         dimSelector = OptionMenu(self.readDimensionWindow, self.dimensionInput, *dimensionOptions)
+        dimSelector.config(font = ("TkDefaultFont", 13))
         dimSelector.place(anchor='s', rely = .5, relx = .5)
 
-        go = Button(self.readDimensionWindow, text = "Go", command = self.collect, width = 15, height = 1)
+        go = Button(self.readDimensionWindow, text = "Go", command = self.collect, font = ("TkDefaultFont", 15))
         go.place(anchor = 'n', rely = .5, relx = .5)
         self.readDimensionWindow.mainloop()
 
@@ -70,13 +75,13 @@ class Pool_Matrix:
         Should read inputs from either the command line or a GUI
         """
         self.readInputWindow = Tk()
-        self.readInputWindow.geometry("400x200")
+        self.readInputWindow.geometry("400x300")
         self.readInputWindow.title("Startup")
 
-        self.readFileButton = Button(self.readInputWindow, text = 'Read From File', command = self.read_from_file, width = 15, height = 3)
+        self.readFileButton = Button(self.readInputWindow, text = 'Read From File', command = self.read_from_file, width = 15, height = 3, font = ("TkDefaultFont", 20))
         self.readFileButton.place(rely=.5, relx = .5, anchor = 's')
 
-        self.inputSchemeButton = Button(self.readInputWindow, text = 'Input Scheme', command = self.input_scheme, width = 15, height = 3)
+        self.inputSchemeButton = Button(self.readInputWindow, text = 'Input Scheme', command = self.input_scheme, width = 15, height = 3, font = ("TkDefaultFont", 20))
         self.inputSchemeButton.place(rely=.5, relx = .5, anchor = 'n')
 
         self.readInputWindow.mainloop()
@@ -87,12 +92,12 @@ class Pool_Matrix:
         Increases the sample number by 1.
         """
 
-        if (self.sampleNum < (self.dim)**2):
+        if (self.sampleNum < self.numSamples):
             self.sampleNum += 1
-            self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.dim**2}")
+            self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.numSamples}")
 
         if(self.useFile):
-            self.get_test_from_file()
+            self.send_to_arduino(self.get_test_from_file())
         else:
             self.send_to_arduino(self.get_tests())
 
@@ -125,8 +130,8 @@ class Pool_Matrix:
             ]
 
     def get_test_from_file(self):
-        raise NotImplementedError
-    
+        return [i for i in range(len(self.inputMatrix)) if self.sampleNum in self.inputMatrix[i]]
+
     def send_to_arduino(self, leds):
         """
         Takes in the three(or really how many ever) integers from 1-96 that correspond
@@ -173,12 +178,12 @@ class Pool_Matrix:
     
     def matrixStart(self):
         if(self.useFile):
-            self.get_test_from_file()
+            self.send_to_arduino(self.get_test_from_file())
         else:
             self.send_to_arduino(self.get_tests())
         self.startButton.destroy()
         self.plusButton["state"] = "active"
-        self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.dim**2}")
+        self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.numSamples}")
 
     def __init__(self, dim=31, sampleNum=1, readFile=None):
 
@@ -196,15 +201,15 @@ class Pool_Matrix:
 
         self.sampleNumString = StringVar(self.mainwindow)
         self.sampleNumString.set("Sampling has not been started")
-        self.showSampleNum = Label(self.mainwindow, textvariable = self.sampleNumString, font = ("TkDefaultFont", 12))
-        self.showSampleNum.config(height = 5)
+        self.showSampleNum = Label(self.mainwindow, textvariable = self.sampleNumString, font = ("TkDefaultFont", 24))
+        self.showSampleNum.config(height = 4)
         self.showSampleNum.pack()
 
-        self.plusButton = Button(text = 'Plus One', command = self.plus_one, width = 15, height = 3)
+        self.plusButton = Button(text = 'Plus One', command = self.plus_one, width = 15, height = 3, font = ("TkDefaultFont", 20))
         self.plusButton.place(rely=.5, relx = .5, anchor = 's')
         self.plusButton["state"] = "disabled"
 
-        self.startButton = Button(text = 'Start', command = self.matrixStart, width = 15, height = 3)
+        self.startButton = Button(text = 'Start', command = self.matrixStart, width = 15, height = 3, font = ("TkDefaultFont", 20))
         self.startButton.place(rely=.5, relx = .5, anchor = 'n')
 
         self.mainwindow.mainloop()
