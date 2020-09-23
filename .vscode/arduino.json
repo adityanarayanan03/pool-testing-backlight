@@ -1,5 +1,0 @@
-{
-    "board": "arduino:avr:uno",
-    "sketch": "96_matrix_arduino\\96_matrix_arduino.ino",
-    "programmer": "AVRISP mkII"
-}
