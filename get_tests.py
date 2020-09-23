@@ -6,6 +6,7 @@ import time
 import sys
 import pickle
 from tkinter import *
+from tkinter import filedialog
 
 class Pool_Matrix:
     """
@@ -16,22 +17,70 @@ class Pool_Matrix:
     readFile = None
     arduino = None
     arduinoPort = None
+    inputMatrix = None
+    useFile = False
 
-    mainwindow = Tk()
+    mainwindow = None
+    readInputWindow = None
+    readDimensionWindow = None
     showSampleNum = None
     plusButton = None
     sampleNumString = None
     startButton = None
+    dimensionInput = None
 
     def setup(self):
-        self.arduinoPort = [a.device for a in serial.tools.list_ports.comports() if "USB-SERIAL" in a.description][0]
-        self.arduino = serial.Serial(self.arduinoPort, 9600)
+        try:
+            self.arduinoPort = [a.device for a in serial.tools.list_ports.comports() if "USB-SERIAL" in a.description][0]
+            self.arduino = serial.Serial(self.arduinoPort, 9600)
+        except:
+            pass
+
+    def read_from_file(self):
+        self.readFile = filedialog.askopenfilename()
+        print(self.readFile)
+        self.readInputWindow.destroy()
+        f = open(self.readFile, 'r')
+        self.inputMatrix = eval(f.read())
+        self.useFile = True
+        
+        
+    def collect(self):
+        self.dim = int(self.dimensionInput.get())
+        print(self.dim)
+        self.readDimensionWindow.destroy()
+
+    def input_scheme(self):
+        self.readInputWindow.destroy()
+        self.readDimensionWindow = Tk()
+        self.readDimensionWindow.geometry("400x100")
+        self.readDimensionWindow.title("Dimension Input")
+        self.dimensionInput = StringVar(self.readDimensionWindow)
+        self.dimensionInput.set("Select Sampling Dimension") #Setting Default Value
+        dimensionOptions = [i for i in range(1, 31)]
+        dimSelector = OptionMenu(self.readDimensionWindow, self.dimensionInput, *dimensionOptions)
+        dimSelector.place(anchor='s', rely = .5, relx = .5)
+
+        go = Button(self.readDimensionWindow, text = "Go", command = self.collect, width = 15, height = 1)
+        go.place(anchor = 'n', rely = .5, relx = .5)
+        self.readDimensionWindow.mainloop()
 
     def read_inputs(self):
         """
         Should read inputs from either the command line or a GUI
         """
-        raise NotImplementedError
+        self.readInputWindow = Tk()
+        self.readInputWindow.geometry("400x200")
+        self.readInputWindow.title("Startup")
+
+        self.readFileButton = Button(self.readInputWindow, text = 'Read From File', command = self.read_from_file, width = 15, height = 3)
+        self.readFileButton.place(rely=.5, relx = .5, anchor = 's')
+
+        self.inputSchemeButton = Button(self.readInputWindow, text = 'Input Scheme', command = self.input_scheme, width = 15, height = 3)
+        self.inputSchemeButton.place(rely=.5, relx = .5, anchor = 'n')
+
+        self.readInputWindow.mainloop()
+
 
     def plus_one(self):
         """
@@ -42,7 +91,10 @@ class Pool_Matrix:
             self.sampleNum += 1
             self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.dim**2}")
 
-        self.send_to_arduino(self.get_tests())
+        if(self.useFile):
+            self.get_test_from_file()
+        else:
+            self.send_to_arduino(self.get_tests())
 
     def get_tests(self, cell = None):
         """
@@ -72,6 +124,9 @@ class Pool_Matrix:
                 2 * self.dim + ((cell % self.dim + math.ceil(cell / self.dim) * self.dim) % (self.dim + 1)),
             ]
 
+    def get_test_from_file(self):
+        raise NotImplementedError
+    
     def send_to_arduino(self, leds):
         """
         Takes in the three(or really how many ever) integers from 1-96 that correspond
@@ -117,27 +172,37 @@ class Pool_Matrix:
         return True
     
     def matrixStart(self):
-        self.send_to_arduino(self.get_tests())
+        if(self.useFile):
+            self.get_test_from_file()
+        else:
+            self.send_to_arduino(self.get_tests())
         self.startButton.destroy()
+        self.plusButton["state"] = "active"
         self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.dim**2}")
 
     def __init__(self, dim=31, sampleNum=1, readFile=None):
+
         self.dim = dim
         self.sampleNum = sampleNum
         self.readFile = readFile
 
         self.setup()
 
+        self.read_inputs()
+
+        self.mainwindow = Tk()
         self.mainwindow.geometry("500x500")
         self.mainwindow.title("Pool Testing Matrix Controller")
 
         self.sampleNumString = StringVar(self.mainwindow)
         self.sampleNumString.set("Sampling has not been started")
-        self.showSampleNum = Label(self.mainwindow, textvariable = self.sampleNumString)
+        self.showSampleNum = Label(self.mainwindow, textvariable = self.sampleNumString, font = ("TkDefaultFont", 12))
+        self.showSampleNum.config(height = 5)
         self.showSampleNum.pack()
 
         self.plusButton = Button(text = 'Plus One', command = self.plus_one, width = 15, height = 3)
         self.plusButton.place(rely=.5, relx = .5, anchor = 's')
+        self.plusButton["state"] = "disabled"
 
         self.startButton = Button(text = 'Start', command = self.matrixStart, width = 15, height = 3)
         self.startButton.place(rely=.5, relx = .5, anchor = 'n')
