@@ -10,6 +10,10 @@ String incomingString = "000000000000"; //6 Copies of 2 digits per Anode/Cathode
 int anodes[] = {0, 0, 0};
 int cathodes[] = {0, 0, 0}; //Zero is not a valid index for the LED Matrix
 
+//Variables for mapping of current wiring to register ports
+int anodeMap[] = {12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7};
+int cathodeMap[] = {11, 10, 9, 8, 19, 18, 17, 16};
+
 void setup()
 {
   //Initialize array
@@ -98,12 +102,22 @@ void resetRegisters()
   no LED's will be on. Anodes are written LOW and Cathodes
   are written HIGH.
   */
-  for (int i = 0; i < 12; i++)
+  for (int i = 0; i < 8; i++)
   {
     regWrite(i, LOW);
   }
 
-  for (int i = 12; i < 20; i++)
+  for (int i = 8; i < 12; i++)
+  {
+    regWrite(i, HIGH);
+  }
+
+  for (int i = 12; i < 16; i++)
+  {
+    regWrite(i, LOW);
+  }
+
+  for (int i = 16; i < 20; i++)
   {
     regWrite(i, HIGH);
   }
@@ -118,12 +132,12 @@ void writeLED(int anode, int cathode, int microsecs)
   */
   if (anode != 0 && cathode != 0)
   {
-    regWrite(anode - 1, HIGH);
-    regWrite(cathode + 12 - 1, LOW);
+    regWrite(anodeMap[anode - 1], HIGH);
+    regWrite(cathodeMap[cathode - 1], LOW);
 
     delayMicroseconds(microsecs);
 
-    regWrite(anode - 1, LOW);
-    regWrite(cathode + 12 - 1, HIGH);
+    regWrite(anodeMap[anode - 1], LOW);
+    regWrite(cathodeMap[cathode - 1], HIGH);
   }
 }
