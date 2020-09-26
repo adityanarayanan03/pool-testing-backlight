@@ -12,15 +12,17 @@ class Pool_Matrix:
     """
     Class for the Duration of a pool-testing run.
     """
-    sampleNum = 1
-    dim = 0
-    numSamples = 0
-    readFile = None
-    arduino = None
-    arduinoPort = None
+    sampleNum = 1 #The plate number the user is on
+    dim = 0 #Width or height of the pooling matrix
+    numSamples = 0 #Total number of samples. May be dim^2.
+    readFile = None #Location of file to read
     inputMatrix = None
     useFile = False
 
+    arduino = None #Serial information
+    arduinoPort = None
+
+    #Tkinter variables
     mainwindow = None
     readInputWindow = None
     readDimensionWindow = None
@@ -31,30 +33,52 @@ class Pool_Matrix:
     dimensionInput = None
 
     def setup(self):
+        '''
+        Sets up serial communication with the arduino board
+        '''
         try:
+            #Defines some communication objects. Maybe increasing baud rate will make the delay smaller?
             self.arduinoPort = [a.device for a in serial.tools.list_ports.comports() if "USB-SERIAL" in a.description][0]
             self.arduino = serial.Serial(self.arduinoPort, 9600)
         except:
+            #Maybe put in some flag or exception or pop-up or something
             pass
 
     def read_from_file(self):
+        '''
+        Uses Tkinter Filedialog to ask the user for a file and processes the 
+        input from the file
+        '''
+        #Uses tkinter to ask user for a file location
         self.readFile = filedialog.askopenfilename()
-        print(self.readFile)
+
+        #Kills The input window because we don't need it anymore
         self.readInputWindow.destroy()
+
+        #This is all stuff to process the file. It reads as a nested list.
         f = open(self.readFile, 'r')
         self.inputMatrix = eval(f.read())
+
+        #Reset some PIV's and status variables.
         self.numSamples = int(len(self.inputMatrix)*len(self.inputMatrix[0])/3)
-        print(self.numSamples)
         self.useFile = True
         
         
     def collect(self):
+        '''
+        Collects input from the user in the case that they want to input the 
+        scheme by hand
+        '''
         self.dim = int(self.dimensionInput.get())
         self.numSamples = self.dim**2
-        print(self.dim)
         self.readDimensionWindow.destroy()
 
     def input_scheme(self):
+        '''
+        Creates the window for asking the user for the dimension if they
+        want to input by hand.
+        '''
+        #This stuff just makes some Tkinter nonsense
         self.readInputWindow.destroy()
         self.readDimensionWindow = Tk()
         self.readDimensionWindow.geometry("400x300")
@@ -66,13 +90,14 @@ class Pool_Matrix:
         dimSelector.config(font = ("TkDefaultFont", 13))
         dimSelector.place(anchor='s', rely = .5, relx = .5)
 
+        #Create a button underneath the dropdown and loop the window
         go = Button(self.readDimensionWindow, text = "Go", command = self.collect, font = ("TkDefaultFont", 15))
         go.place(anchor = 'n', rely = .5, relx = .5)
         self.readDimensionWindow.mainloop()
 
     def read_inputs(self):
         """
-        Should read inputs from either the command line or a GUI
+        Reads input from GUI windows.
         """
         self.readInputWindow = Tk()
         self.readInputWindow.geometry("400x300")
@@ -89,7 +114,7 @@ class Pool_Matrix:
 
     def plus_one(self):
         """
-        Increases the sample number by 1.
+        Increases the sample number by 1, and calls the necessary functions to send to the Arduino
         """
 
         if (self.sampleNum < self.numSamples):
@@ -130,6 +155,10 @@ class Pool_Matrix:
             ]
 
     def get_test_from_file(self):
+        '''
+        Searches the matrix we got from Origami Assays in the file for the three locations where
+        states are high.
+        '''
         return [i+1 for i in range(len(self.inputMatrix)) if self.sampleNum in self.inputMatrix[i]]
 
     def send_to_arduino(self, leds):
@@ -146,10 +175,12 @@ class Pool_Matrix:
 
         if (len(leds) != 3):
             raise ValueError("Function requires 3 or 1 leds")
-
+        
+        #Creates the anode, cathode pair from the raw numbers
         anodes = [i%12 if i%12 != 0 else 12 for i in leds]
         cathodes = [i//12+1 if i%12!=0 else i//12 for i in leds]
 
+        #Constructs the string we need to send to the arduino
         sendString = ""
         for anode in anodes:
             if anode < 10:
@@ -162,6 +193,7 @@ class Pool_Matrix:
                 raise ValueError("This format is not compatible with 96 well plate")
             sendString += f"0{cathode}"
         
+        #Send to the arduino. If that fails, then save stuff to pickle file and quit.
         try:
             print(sendString)
             self.arduino.write(sendString.encode())
@@ -177,6 +209,9 @@ class Pool_Matrix:
         return True
     
     def matrixStart(self):
+        '''
+        Starting the matrix needs special instructions that cant be done from __init__
+        '''
         if(self.useFile):
             self.send_to_arduino(self.get_test_from_file())
         else:
