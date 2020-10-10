@@ -28,21 +28,27 @@ class Pool_Matrix:
     readDimensionWindow = None
     showSampleNum = None
     plusButton = None
-    sampleNumString = None
+    sampleNumString = None #Later established as Tkinter string var that displays on main window
     startButton = None
     dimensionInput = None
 
-    def setup(self):
+    def establish_connection(self):
         '''
         Sets up serial communication with the arduino board
         '''
+        self.sampleNumString.set("Establishing Connection...")
+        self.mainwindow.update()
         try:
             #Defines some communication objects. Maybe increasing baud rate will make the delay smaller?
             self.arduinoPort = [a.device for a in serial.tools.list_ports.comports() if "USB-SERIAL" in a.description][0]
             self.arduino = serial.Serial(self.arduinoPort, 9600)
+            self.sampleNumString.set("Backlight Found. Initializing...")
+            self.mainwindow.update()
+            time.sleep(2)
+            return True
         except:
             #Maybe put in some flag or exception or pop-up or something
-            pass
+            return False
 
     def read_from_file(self):
         '''
@@ -212,21 +218,25 @@ class Pool_Matrix:
         '''
         Starting the matrix needs special instructions that cant be done from __init__
         '''
-        if(self.useFile):
-            self.send_to_arduino(self.get_test_from_file())
+        if self.establish_connection():
+            if(self.useFile):
+                print(self.arduinoPort)
+                print(self.arduino)
+                #self.arduino.write("010101020202".encode())
+                self.send_to_arduino(self.get_test_from_file())
+            else:
+                self.send_to_arduino(self.get_tests())
+            self.startButton.destroy()
+            self.plusButton["state"] = "active"
+            self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.numSamples}")
         else:
-            self.send_to_arduino(self.get_tests())
-        self.startButton.destroy()
-        self.plusButton["state"] = "active"
-        self.sampleNumString.set(f"On Sample: {self.sampleNum} out of {self.numSamples}")
+            self.sampleNumString.set("No Backlight Found")
 
     def __init__(self, dim=31, sampleNum=1, readFile=None):
 
         self.dim = dim
         self.sampleNum = sampleNum
         self.readFile = readFile
-
-        self.setup()
 
         self.read_inputs()
 
