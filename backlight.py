@@ -200,7 +200,7 @@ class Pool_Matrix:
         
         #Send to the arduino. If that fails, then save stuff to pickle file and quit.
         try:
-            print(sendString)
+            #print(sendString)
             self.arduino.write(sendString.encode())
         except serial.serialutil.SerialException:
             pickle_dump = {'dim':self.dim, 'sampleNum':self.sampleNum}
@@ -209,7 +209,7 @@ class Pool_Matrix:
             pickle_file.close()
 
 
-            print("Sending data failed! The serial connection was terminated. Recovery data saved to pickle file.")
+            #print("Sending data failed! The serial connection was terminated. Recovery data saved to pickle file.")
             sys.exit(0)
         return True
     
@@ -219,8 +219,8 @@ class Pool_Matrix:
         '''
         if self.establish_connection():
             if(self.useFile):
-                print(self.arduinoPort)
-                print(self.arduino)
+                #print(self.arduinoPort)
+                #print(self.arduino)
                 #self.arduino.write("010101020202".encode())
                 self.send_to_arduino(self.get_test_from_file())
             else:
