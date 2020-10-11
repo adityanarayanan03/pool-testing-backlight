@@ -1,7 +1,6 @@
 import math
 import serial
 import serial.tools.list_ports
-import random
 import time
 import sys
 import pickle
