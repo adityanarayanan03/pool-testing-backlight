@@ -6,7 +6,7 @@ The pool testing backlight offers an efficient way to perform pool/group testing
 ## Software
 
 ### 1. Installation
-The driver software for the pool-testing-backlight can be downloaded [here](https://adityanarayanan03.github.io/downloads/pool_testing_backlight.html). The program itself is located at ```"Pool Testing Backlight"/Executables/backlight.exe```. The exe file should not be removed from the Executables directory. I recommend adding backlight.exe to your PATH or system variables, but that is purely optional.
+The driver software for the pool-testing-backlight can be downloaded [here](https://adityanarayanan03.github.io/projects/pool_testing_backlight/pool_testing_backlight.html). The program itself is located at ```"Pool Testing Backlight"/Executables/backlight.exe```. The exe file should not be removed from the Executables directory. I recommend adding backlight.exe to your PATH or system variables, but that is purely optional.
 
 ### 2. Preparing the testing matrix
 The pool testing backlight offers two methods to load a specific testing scheme: through text file or by selecting a sample size.
