@@ -12,7 +12,7 @@ The driver software for the pool-testing-backlight can be downloaded [here](http
 The pool testing backlight offers two methods to load a specific testing scheme: through text file or by selecting a sample size.
 
 - **Through Text File**:
-Loading your testing scheme through a text file is as simple as saving your testing matrix to a text file. A sample input is available [here](https://github.com/adityanarayanan03/pool-testing-backlight/sample_input.txt).
+Loading your testing scheme through a text file is as simple as saving your testing matrix to a text file. A sample input is available [here](https://github.com/adityanarayanan03/pool-testing-backlight/blob/master/sample_input.txt). Pre made lists containing the matrix data can be found at [Origami Assays](https://www.smarterbetter.design/origamiassays/default/choose_assay).
 - **Through sample dimension**:
 The pool-testing-backlight software allows you to select the length/width of an array containing patient samples. For example, to pool 400 patients' samples, I would select "20" when prompted by the software, and the program will generate a scheme to pool the 400 patients' samples into wells 1-60 on the well plate.
 ### 2. Using the software
