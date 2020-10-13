@@ -3,8 +3,19 @@ The pool testing backlight offers an efficient way to perform pool/group testing
 
 ## Hardware
 
+The Pool Testing Backlight (pictured below) is a enclosed device with a seat for a standard 96-well plate. The backlight contains an 8x12 LED array underneath a polycarbonate window. When a well plate is placed into its seat, individual LED's on the array can be turned on to indicate certain desired wells on the well plate. 
+
+The LED array is built around an Arduino Nano, and uses three 8-bit shift register IC's as a serial-to-parallel converter to achieve mulitplexing on the LED array. The driver software communicates with the Arduino Nano through a USB-Serial connection, which also supplies the necessary 5V to the Arduino Nano.  
 ## Software
 
+The software for the pool testing backlight is a driver program that serves a couple of purposes:
+
+- Load and interpret multiple data formats
+- Send LED-lighting information to the backlight device
+- Interact with users through a Graphical interface
+
+The software was written in Python 3.6 and the GUI was built using the TKinter module. The module cx_freeze was used to create executable files from the original Python script.
+## How to use the pool testing backlight
 ### 1. Installation
 The driver software for the pool-testing-backlight can be downloaded [here](https://adityanarayanan03.github.io/projects/pool_testing_backlight/pool_testing_backlight.html). The program itself is located at ```"Pool Testing Backlight"/Executables/backlight.exe```. The exe file should not be removed from the Executables directory. I recommend adding backlight.exe to your PATH or system variables, but that is purely optional.
 
