@@ -29,7 +29,7 @@ Loading your testing scheme through a text file is as simple as saving your test
 The pool-testing-backlight software allows you to select the length/width of an array containing patient samples. For example, to pool 400 patients' samples, I would select "20" when prompted by the software, and the program will generate a scheme to pool the 400 patients' samples into wells 1-60 on the well plate.
 
 
-### 3. Using the software
+### 3. Using the system
 - **Run backlight.exe**
 - **Ensure the backlight is connected to your computer via USB**. If the program does not detect a backlight, try different USB ports and check Device Manager to identfiy if a serial device is found.
 - **Follow the prompts given by the software**
