@@ -5,6 +5,8 @@ The pool testing backlight offers an efficient way to perform pool/group testing
 
 The Pool Testing Backlight (pictured below) is a enclosed device with a seat for a standard 96-well plate. The backlight contains an 8x12 LED array underneath a polycarbonate window. When a well plate is placed into its seat, individual LED's on the array can be turned on to indicate certain desired wells on the well plate. 
 
+<img src="https://adityanarayanan03.github.io/images/pool_testing_backlight.JPG">
+
 The LED array is built around an Arduino Nano, and uses three 8-bit shift register IC's as a serial-to-parallel converter to achieve mulitplexing on the LED array. The driver software communicates with the Arduino Nano through a USB-Serial connection, which also supplies the necessary 5V to the Arduino Nano.  
 ## Software
 
